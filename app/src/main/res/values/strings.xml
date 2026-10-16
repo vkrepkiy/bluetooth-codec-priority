@@ -1,0 +1,32 @@
+<resources>
+    <string name="app_name">Bluetooth Codec Priority</string>
+    <string name="nav_home">Home</string><string name="nav_devices">Devices</string>
+    <string name="home_subtitle">Choose the best codec reported as selectable by Android.</string>
+    <string name="status_ready">Ready. Codec status is read from the Bluetooth stack when available.</string>
+    <string name="phone_capabilities">Phone capabilities</string><string name="phone_capabilities_unknown">Phone-wide codec capabilities are unknown; Android did not expose a confirmed list.</string><string name="none_reported">None reported</string>
+    <string name="status_bluetooth_unavailable">Unable to read Bluetooth status.</string>
+    <string name="bluetooth_permission_required">Nearby devices permission is required to read or change codec status.</string>
+    <string name="grant_bluetooth_access">Grant Bluetooth access</string><string name="global_priority">Global priority</string>
+    <string name="enabled">Enabled</string><string name="disabled">Disabled</string><string name="confirmed_codecs">Codecs reported by connected devices: %1$s</string>
+    <string name="edit_priority">Edit priority (%1$d codecs)</string><string name="connected_devices">Connected devices</string>
+    <string name="no_connected_devices">No connected Bluetooth audio devices.</string><string name="no_known_devices">No known Bluetooth audio devices yet.</string>
+    <string name="refresh">Refresh</string><string name="diagnostics">Diagnostics</string><string name="about">About</string><string name="active_codec">Active</string>
+    <string name="selectable_codecs">Selectable (connected device)</string><string name="audio">Audio</string><string name="control_mode">Control mode</string><string name="requested_codec">Requested</string><string name="switching_result">Last result</string><string name="codec_status_unavailable">Unavailable / restricted</string><string name="not_requested">Not requested</string><string name="no_result">No attempt recorded</string>
+    <string name="connected">Connected</string><string name="disconnected">Not connected</string><string name="unknown">Unknown</string><string name="device_not_connected">Not currently connected</string><string name="connect_to_reapply">Connect this device to apply the codec priority.</string>
+    <string name="association_status">Codec control authorization: %1$s</string><string name="authorization_pending">Authorization pending</string>
+    <string name="reapply_now">Reapply now</string><string name="priority_order">Priority order</string>
+    <string name="priority_explanation">The first codec supported by the connected device is requested. Active codec is confirmed by read-back.</string>
+    <string name="save_priority">Save priority</string><string name="known_devices">Known Bluetooth audio devices</string>
+    <string name="devices_explanation">Saved devices and their last known codec state. Connected devices expose live controls.</string>
+    <string name="device_mode">Device mode</string><string name="mode_global">Use global priority</string><string name="mode_custom">Custom priority</string><string name="mode_system_default">System default</string>
+    <string name="save_custom_priority">Save custom priority</string><string name="authorize_codec_control">Authorize codec control</string>
+    <string name="background_setup_hint">For ColorOS, allow auto-launch, background activity and unrestricted battery use.</string>
+    <string name="diagnostics_explanation">The log records requests, read-back verification and restricted API errors.</string><string name="copy_log">Copy log</string><string name="clear_log">Clear log</string>
+    <string name="about_support">About &amp; support</string><string name="about_subtitle">Capabilities, permissions and known limitations.</string>
+    <string name="android_support">Android support</string><string name="android_support_value">Minimum Android: 8.0 (API 26). Recommended: Android 12+ (API 31). Target: Android 16 (API 36). Reliable codec control is tested on Android 15 / ColorOS.</string>
+    <string name="tested_hardware">Tested hardware</string><string name="tested_hardware_value">OPPO Find X5 with Beyerdynamic AVENTHO 300. aptX HD was verified after Companion association.</string>
+    <string name="permissions">Permissions and authorization</string><string name="permissions_value">Nearby devices permission is used to read connected Bluetooth audio devices. Companion association may be required before codec control is allowed.</string>
+    <string name="limitations">Limitations</string><string name="limitations_value">Codec switching depends on the Android and OEM Bluetooth stack. A reported capability may still reject renegotiation. The app never reports success without an active-codec read-back.</string>
+    <string name="background_behavior">Background behavior</string><string name="background_behavior_value">The app reacts to Bluetooth connection events, Companion presence and boot recovery. A lightweight connected-device foreground service keeps one status notification visible; it does not poll Bluetooth or perform codec work. ColorOS may require auto-launch, background activity and unrestricted battery use.</string>
+    <string name="close">Close</string>
+</resources>

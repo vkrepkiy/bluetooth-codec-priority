@@ -41,10 +41,15 @@ object CodecStatusNotification {
             return
         }
         val title = if (snapshots.size == 1) snapshots.first().deviceName else "${snapshots.size} Bluetooth audio devices"
-        val text = snapshots.joinToString("\n") { snapshot ->
-            "${snapshot.deviceName}: active ${snapshot.activeCodec?.name ?: "unavailable"}, requested ${snapshot.requestedCodec?.name ?: "none"}, result ${snapshot.lastResult ?: "not applied"}"
+        val lines = snapshots.map { snapshot ->
+            "${snapshot.deviceName}: ${snapshot.activeCodec?.name ?: "unavailable"}"
         }
-        notify(context, build(context, title, text))
+        // Android may show only one line when collapsed. Include every device in
+        // that summary, with one separate row per device when expanded.
+        val notification = createBuilder(context, title, lines.joinToString(" · "))
+            .setStyle(NotificationCompat.InboxStyle().also { style -> lines.forEach(style::addLine) })
+            .build()
+        notify(context, notification)
     }
 
     fun showWaiting(context: Context) {
@@ -53,7 +58,10 @@ object CodecStatusNotification {
         notify(context, build(context, "Bluetooth Codec Priority", "No connected A2DP device"))
     }
 
-    fun build(context: Context, title: String, text: String): android.app.Notification {
+    fun build(context: Context, title: String, text: String): android.app.Notification =
+        createBuilder(context, title, text).build()
+
+    private fun createBuilder(context: Context, title: String, text: String): NotificationCompat.Builder {
         val openAppIntent = PendingIntent.getActivity(context, 0, Intent(context, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
         }, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
@@ -68,7 +76,6 @@ object CodecStatusNotification {
             .setAutoCancel(false)
             .setOnlyAlertOnce(true)
             .setShowWhen(false)
-            .build()
     }
 
     @SuppressLint("MissingPermission")

@@ -87,10 +87,53 @@ class BluetoothReconnectTest {
         val notification = readNotification()
         assertEquals("AVENTHO 300", notification.extras.getString(Notification.EXTRA_TITLE))
         val text = notification.extras.getString(Notification.EXTRA_TEXT).orEmpty()
-        assertTrue(text.contains("active aptX Adaptive"))
+        assertEquals("AVENTHO 300: aptX Adaptive", text)
         assertFalse(text.contains("Shokz"))
         val notifications = shadowOf(context.getSystemService(NotificationManager::class.java))
         assertEquals(1, notifications.size())
+    }
+
+    @Test fun twoHeadsetsShowCountAndBothActiveCodecsWithoutApplyDiagnostics() {
+        val shokz = createSnapshot("Shokz", "aac", "AAC").copy(
+            requestedCodec = CodecCapability("aac", "AAC"), lastResult = "SUCCESS"
+        )
+        val aventho = createSnapshot("AVENTHO 300", "aptx_adaptive", "aptX Adaptive").copy(
+            deviceAddress = "AA:BB:CC:DD:EE:02",
+            requestedCodec = CodecCapability("aptx_hd", "aptX HD"), lastResult = "MISMATCH"
+        )
+        CodecStatusNotification.showConnected(context, listOf(shokz))
+        CodecStatusNotification.showConnected(context, listOf(shokz, aventho))
+
+        val notification = readNotification()
+        assertEquals("2 Bluetooth audio devices", notification.extras.getString(Notification.EXTRA_TITLE))
+        assertEquals("Shokz: AAC · AVENTHO 300: aptX Adaptive", notification.extras.getString(Notification.EXTRA_TEXT))
+        assertEquals(
+            listOf("Shokz: AAC", "AVENTHO 300: aptX Adaptive"),
+            notification.extras.getCharSequenceArray(Notification.EXTRA_TEXT_LINES)?.map { it.toString() }
+        )
+        assertFalse(notification.extras.toString().contains("SUCCESS"))
+        assertFalse(notification.extras.toString().contains("MISMATCH"))
+        assertFalse(notification.extras.toString().contains("aptX HD"))
+        assertEquals(1, shadowOf(context.getSystemService(NotificationManager::class.java)).size())
+    }
+
+    @Test fun disconnectingOneOfTwoHeadsetsLeavesOnlyTheRemainingDevice() {
+        val shokz = createSnapshot("Shokz", "aac", "AAC")
+        val aventho = createSnapshot("AVENTHO 300", "aptx_hd", "aptX HD").copy(deviceAddress = "AA:BB:CC:DD:EE:02")
+        CodecStatusNotification.showConnected(context, listOf(shokz, aventho))
+        CodecStatusNotification.showConnected(context, listOf(aventho))
+        val notification = readNotification()
+        assertEquals("AVENTHO 300", notification.extras.getString(Notification.EXTRA_TITLE))
+        assertEquals("AVENTHO 300: aptX HD", notification.extras.getString(Notification.EXTRA_TEXT))
+        assertEquals(listOf("AVENTHO 300: aptX HD"), notification.extras.getCharSequenceArray(Notification.EXTRA_TEXT_LINES)?.map { it.toString() })
+    }
+
+    @Test fun unavailableActiveCodecIsNotReplacedWithRequestedCodec() {
+        val snapshot = createSnapshot("AVENTHO 300", "aptx_hd", "aptX HD").copy(
+            activeCodec = null, requestedCodec = CodecCapability("aptx_hd", "aptX HD"), lastResult = "SUCCESS"
+        )
+        CodecStatusNotification.showConnected(context, listOf(snapshot))
+        assertEquals("AVENTHO 300: unavailable", readNotification().extras.getString(Notification.EXTRA_TEXT))
     }
 
     private fun createSnapshot(name: String, codecId: String, codecName: String) = CodecSnapshot(

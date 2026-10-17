@@ -12,8 +12,8 @@ android {
         applicationId = "com.example.bluetoothcodecpriority"
         minSdk = 26
         targetSdk = 36
-        versionCode = providers.gradleProperty("versionCode").orNull?.toIntOrNull() ?: 3
-        versionName = providers.gradleProperty("versionName").orNull ?: "0.2.1"
+        versionCode = providers.gradleProperty("versionCode").orNull?.toIntOrNull() ?: 4
+        versionName = providers.gradleProperty("versionName").orNull ?: "0.2.2"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     buildTypes {

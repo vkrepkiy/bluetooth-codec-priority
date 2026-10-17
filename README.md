@@ -25,10 +25,10 @@ Contributions are welcome. Android and Bluetooth experience, testing on differen
 adb install -r app/build/outputs/apk/debug/app-debug.apk
 ```
 
-The release variant uses `versionName 0.2.1` and `versionCode 3` by default. Both can be overridden without editing source:
+The release variant uses `versionName 0.2.2` and `versionCode 4` by default. Both can be overridden without editing source:
 
 ```sh
-./gradlew lintRelease assembleRelease -PversionName=0.2.1 -PversionCode=3
+./gradlew lintRelease assembleRelease -PversionName=0.2.2 -PversionCode=4
 ```
 
 GitHub Actions builds and tests the release variant on every pull request and push to `main`. Pushing a version tag such as `v0.2.0` also publishes a GitHub Release with the APK files attached; tag builds use the tag as `versionName` and the workflow run number as `versionCode`. The `app-release-unsigned.apk` asset is unsigned; the accompanying debug APK is installable for testing. Production distribution requires configuring a protected signing key in GitHub Actions.
@@ -69,6 +69,8 @@ A2DP broadcasts and Companion callbacks are triggers, not state. The Bluetooth s
 - A connection event waits for A2DP readiness, then performs bounded retries. Duplicate triggers are serialized; if settings change during an apply, the current policy is retried once.
 - Every apply filters the device's selectable codecs and requires live active-codec read-back. A setter return value alone is never success.
 - The single status notification summarizes all currently connected A2DP devices. It is updated by both foreground UI reads and background event handlers.
+
+The notification shows only device names and their live active codecs. With multiple devices, the title shows the count, the collapsed summary includes each device, and expanding it shows one row per device. Android may truncate the collapsed summary to fit the available width. Requested codecs and apply results remain in the app's device cards and diagnostics.
 
 The complete event and state table is documented in [docs/connection-state-machine.md](docs/connection-state-machine.md).
 

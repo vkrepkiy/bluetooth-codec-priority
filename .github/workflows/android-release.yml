@@ -37,7 +37,7 @@ jobs:
           if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
             echo "RELEASE_VERSION_NAME=${REF_NAME#v}" >> "$GITHUB_ENV"
           else
-            echo "RELEASE_VERSION_NAME=0.2.1" >> "$GITHUB_ENV"
+            echo "RELEASE_VERSION_NAME=0.2.2" >> "$GITHUB_ENV"
           fi
           echo "RELEASE_VERSION_CODE=${GITHUB_RUN_NUMBER}" >> "$GITHUB_ENV"
 

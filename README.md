@@ -25,10 +25,10 @@ Contributions are welcome. Android and Bluetooth experience, testing on differen
 adb install -r app/build/outputs/apk/debug/app-debug.apk
 ```
 
-The release variant uses `versionName 0.2.0` and `versionCode 2` by default. Both can be overridden without editing source:
+The release variant uses `versionName 0.2.1` and `versionCode 3` by default. Both can be overridden without editing source:
 
 ```sh
-./gradlew lintRelease assembleRelease -PversionName=0.2.0 -PversionCode=2
+./gradlew lintRelease assembleRelease -PversionName=0.2.1 -PversionCode=3
 ```
 
 GitHub Actions builds and tests the release variant on every pull request and push to `main`. Pushing a version tag such as `v0.2.0` also publishes a GitHub Release with the APK files attached; tag builds use the tag as `versionName` and the workflow run number as `versionCode`. The `app-release-unsigned.apk` asset is unsigned; the accompanying debug APK is installable for testing. Production distribution requires configuring a protected signing key in GitHub Actions.
@@ -54,7 +54,9 @@ The app never treats a saved preference as active, never invents vendor codecs, 
 
 ## Background operation
 
-After the user authorizes a device with `Authorize codec control`, switching is event-driven and does not use a polling loop. A lightweight `connectedDevice` foreground service keeps one non-dismissible status notification alive; it does not perform codec work. The Home screen shows only currently connected A2DP devices; Devices also keeps the saved device list and last known state. The app listens for A2DP connection broadcasts, registers Companion presence observation for the authorized device, and checks connected A2DP devices after `BOOT_COMPLETED`. Each apply attempt is bounded and serialized. On ColorOS, if broadcasts are suppressed, allow the app's background activity/auto-launch and set its battery mode to unrestricted; this is an OEM setting, not a requirement for continuous polling.
+After the user authorizes a device with `Authorize codec control`, switching is event-driven and does not use a polling loop. The `connectedDevice` foreground service keeps one status notification alive and registers an A2DP connection receiver for its lifetime, including while the Activity is stopped. It performs one startup reconciliation through the shared background applier. The exported manifest receiver also provides an event entry point when the process is absent. Both receivers listen to protected system actions; Bluetooth uses its own privileged UID, so a non-exported receiver is not sufficient. The Home screen shows only currently connected A2DP devices; Devices also keeps the saved device list and last known state. Companion presence observation and `BOOT_COMPLETED` provide additional triggers. Each apply attempt is bounded and serialized. On ColorOS, if broadcasts are suppressed, allow the app's background activity/auto-launch and set its battery mode to unrestricted; this is an OEM setting, not a requirement for continuous polling.
+
+Companion authorization is matched against the association's persisted MAC address, not `associatedDevice`, which Android does not persist across sessions. Presence can arrive before A2DP readiness, so it enters the bounded apply retry path. Disconnect callbacks refresh the notification; an empty live connection list replaces the previous headset with `No connected A2DP device`. A connected headset remains visible with unavailable codec status if Android cannot yet expose its codec.
 
 ## Connection state machine
 
@@ -72,19 +74,19 @@ The complete event and state table is documented in [docs/connection-state-machi
 
 ## Hardware verification
 
-Build and unit tests are locally verifiable. Physical OPPO Find X5 / ColorOS and Beyerdynamic AVENTHO 300 negotiation is not verified in this environment. After pairing and connecting the headphones, open the app, confirm `aptX HD` appears in the selectable list, put it first, enable global priority, and use Reapply now. Capture:
+The support matrix records the previously reported manual OPPO/AVENTHO aptX HD read-back. It does not establish background handover reliability. The 0.2.1 reconnect fix has automated regression coverage on simulated Android 14/15, but has not been installed or checked on the physical phone. After pairing and connecting the headphones, open the app, confirm `aptX HD` appears in the selectable list, put it first, enable global priority, and use Reapply now. Capture:
 
 ```sh
 adb logcat -s CodecPriority
 adb shell dumpsys bluetooth_manager | grep -i -E 'codec|a2dp'
 ```
 
-If the result is Restricted, that is an Android/OEM privilege or hidden-API limitation, not a successful switch. ColorOS may also require allowing background activity and auto-launch for the app. No physical device was available for this build, so AVENTHO 300 aptX HD negotiation and ten-cycle reconnect behavior remain unverified.
+If the result is Restricted, that is an Android/OEM privilege or hidden-API limitation, not a successful switch. ColorOS may also require allowing background activity and auto-launch for the app. Physical Shokz-to-AVENTHO handover, aptX HD negotiation with 0.2.1, and ten-cycle reconnect behavior remain unverified. See [the reconnect diagnosis](docs/reconnect-diagnosis.md) for the confirmed code defects and validation boundaries.
 
 ## Platform and Play limitations
 
 `BluetoothA2dp.getCodecStatus()` and `setCodecConfigPreference()` are hidden/system Bluetooth APIs. The implementation uses reflection as an isolated best-effort path and verifies the active codec after every request. Android's non-SDK restrictions and OEM Bluetooth implementations may block it even after companion association. This project therefore does not promise codec switching on every Android 15/16 device and should not claim universal Play compatibility without testing the target release policy and OEM behavior.
 
-The app requests Nearby devices, notification, and companion presence permissions. It runs a lightweight `connectedDevice` foreground service solely for one non-dismissible status notification; it does not poll Bluetooth or perform codec work in the service. Tapping the notification opens the app. Force-stop and OEM background restrictions can still prevent event delivery. The app does not use root, Shizuku, accessibility automation, accounts, analytics, or network access.
+The app requests Nearby devices, notification, and companion presence permissions. It runs a `connectedDevice` foreground service for the status notification, event registration, and one startup reconciliation; it does not poll Bluetooth. Tapping the notification opens the app. Force-stop and OEM background restrictions can still prevent event delivery. The app does not use root, Shizuku, accessibility automation, accounts, analytics, or network access.
 
 Before publishing, complete [the release checklist](docs/release-checklist.md). In particular, do not describe hidden-API codec control as a guaranteed Play capability, and provide a privacy policy/Data Safety declaration appropriate to the final manifest and any future telemetry. No Play approval is claimed by this repository.

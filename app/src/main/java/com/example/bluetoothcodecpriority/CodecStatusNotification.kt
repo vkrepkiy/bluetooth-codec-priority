@@ -36,7 +36,10 @@ object CodecStatusNotification {
     fun showConnected(context: Context, snapshots: List<CodecSnapshot>) {
         createChannel(context)
         if (android.os.Build.VERSION.SDK_INT >= 33 && ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) return
-        if (snapshots.isEmpty()) return
+        if (snapshots.isEmpty()) {
+            showWaiting(context)
+            return
+        }
         val title = if (snapshots.size == 1) snapshots.first().deviceName else "${snapshots.size} Bluetooth audio devices"
         val text = snapshots.joinToString("\n") { snapshot ->
             "${snapshot.deviceName}: active ${snapshot.activeCodec?.name ?: "unavailable"}, requested ${snapshot.requestedCodec?.name ?: "none"}, result ${snapshot.lastResult ?: "not applied"}"

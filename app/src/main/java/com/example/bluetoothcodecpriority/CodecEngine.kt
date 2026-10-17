@@ -93,7 +93,7 @@ class CodecEngine(private val context: Context) {
             val devices = a2dp.connectedDevices
             diagnosticLog.write("readConnected: A2DP reports ${devices.size} connected device(s): ${devices.joinToString { it.name ?: it.address }}")
             if (devices.isEmpty()) diagnosticLog.write("readConnected: no A2DP headphones are connected")
-            devices.mapNotNull { readStatus(a2dp, it, settings.deviceApplyStates[it.address]) }
+            devices.map { readStatus(a2dp, it, settings.deviceApplyStates[it.address]) }
         }
     }
 
@@ -309,8 +309,8 @@ class CodecEngine(private val context: Context) {
     }
 
     @SuppressLint("MissingPermission")
-    private fun readStatus(a2dp: BluetoothA2dp, device: BluetoothDevice, savedState: DeviceApplyState?): CodecSnapshot? = runCatching {
-        val status = getCodecStatus(a2dp, device) ?: return null
+    private fun readStatus(a2dp: BluetoothA2dp, device: BluetoothDevice, savedState: DeviceApplyState?): CodecSnapshot = runCatching {
+        val status = getCodecStatus(a2dp, device) ?: error("Bluetooth did not expose codec status")
         val selectable = invokeList(status, "getCodecsSelectableCapabilities").map(::describe)
         val active = invokeObject(status, "getCodecConfig")?.let(::describe)
         val activeConfig = invokeObject(status, "getCodecConfig")

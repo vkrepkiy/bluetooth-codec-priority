@@ -77,8 +77,7 @@ class MainActivity : ComponentActivity() {
         super.onStart()
         if (connectionReceiverRegistered) return
         val filter = IntentFilter("android.bluetooth.a2dp.profile.action.CONNECTION_STATE_CHANGED")
-        if (android.os.Build.VERSION.SDK_INT >= 33) registerReceiver(connectionEventsReceiver, filter, RECEIVER_NOT_EXPORTED)
-        else @Suppress("DEPRECATION") registerReceiver(connectionEventsReceiver, filter)
+        ContextCompat.registerReceiver(this, connectionEventsReceiver, filter, ContextCompat.RECEIVER_EXPORTED)
         connectionReceiverRegistered = true
         connectionRefreshToken++
     }
@@ -249,11 +248,12 @@ class MainActivity : ComponentActivity() {
     @Suppress("DEPRECATION", "NewApi")
     private fun refreshAssociationStates(states: MutableMap<String, AssociationState>, addresses: Collection<String>) {
         val manager = getSystemService(CompanionDeviceManager::class.java) ?: return
-        val authorized = runCatching { manager.myAssociations.mapNotNull { association ->
-            if (android.os.Build.VERSION.SDK_INT >= 34) association.associatedDevice?.bluetoothDevice?.address
-            else association.deviceMacAddress?.toString()
-        }.toSet() }.getOrDefault(emptySet())
-        addresses.distinct().forEach { address -> states[address] = if (address in authorized) AssociationState.AUTHORIZED else states[address] ?: AssociationState.NOT_AUTHORIZED }
+        val authorized = runCatching { listAuthorizedAddresses(manager) }.getOrDefault(emptyList())
+        addresses.distinct().forEach { address ->
+            states[address] = if (authorized.any { it.equals(address, ignoreCase = true) }) AssociationState.AUTHORIZED
+            else if (states[address] == AssociationState.PENDING) AssociationState.PENDING
+            else AssociationState.NOT_AUTHORIZED
+        }
     }
 }
 

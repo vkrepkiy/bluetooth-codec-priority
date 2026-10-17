@@ -27,7 +27,9 @@ This checklist is for a real release review. A debug APK that works on one phone
 - [ ] Validate Companion presence callbacks after association and reboot.
 - [ ] Validate boot handling when headphones are already connected.
 - [ ] Validate that duplicate broadcasts do not create concurrent codec applies.
-- [ ] Confirm bounded retries and no continuous polling; verify the connected-device foreground service performs notification duty only.
+- [ ] Confirm bounded retries and no continuous polling; verify the connected-device foreground service receives A2DP events while the Activity is stopped and reconciles once on startup.
+- [ ] Verify restored Companion associations authorize using their persisted MAC even when `associatedDevice` is null.
+- [ ] Switch Shokz → no A2DP device → AVENTHO 300 while the Activity is stopped; verify the notification changes and aptX HD is confirmed by live read-back.
 - [ ] Verify the single ongoing status notification shows live read-back and cannot be dismissed while the service is running.
 - [ ] Verify Android 13+ notification permission denial leaves codec switching functional and produces no crash.
 - [ ] Document OEM setup when needed: ColorOS auto-launch, background activity, and unrestricted battery usage.

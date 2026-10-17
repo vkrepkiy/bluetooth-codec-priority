@@ -12,8 +12,8 @@ android {
         applicationId = "com.example.bluetoothcodecpriority"
         minSdk = 26
         targetSdk = 36
-        versionCode = providers.gradleProperty("versionCode").orNull?.toIntOrNull() ?: 2
-        versionName = providers.gradleProperty("versionName").orNull ?: "0.2.0"
+        versionCode = providers.gradleProperty("versionCode").orNull?.toIntOrNull() ?: 3
+        versionName = providers.gradleProperty("versionName").orNull ?: "0.2.1"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
@@ -25,6 +25,7 @@ android {
     }
     kotlinOptions { jvmTarget = "17" }
     buildFeatures { compose = true; buildConfig = true }
+    testOptions { unitTests.isIncludeAndroidResources = true }
 }
 
 dependencies {
@@ -39,4 +40,5 @@ dependencies {
     implementation("androidx.core:core-ktx:1.15.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0")
     testImplementation("junit:junit:4.13.2")
+    testImplementation("org.robolectric:robolectric:4.14.1")
 }

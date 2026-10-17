@@ -34,7 +34,7 @@ object BackgroundCodecApplier {
             if (attempt > 0) delay(500L * attempt)
             log.write("background: apply attempt ${attempt + 1}/3 for $deviceAddress")
             result = engine.apply(deviceAddress, priority)
-            if (result !is ApplyResult.Failed) break
+            if (result !is ApplyResult.Failed && !(result is ApplyResult.NoMatch && result.selectable.isEmpty())) break
             log.write("background: attempt ${attempt + 1}/3 failed; waiting for A2DP readiness")
         }
         val latestSettings = store.settings.first()
@@ -43,9 +43,9 @@ object BackgroundCodecApplier {
             return applyCurrent(context, deviceAddress, false)
         }
         val snapshots = engine.readConnected()
+        CodecStatusNotification.showConnected(context, snapshots)
         val snapshot = snapshots.firstOrNull { it.deviceAddress == deviceAddress }
         if (snapshot != null) {
-            CodecStatusNotification.showConnected(context, snapshots)
             log.write("background: live status active=${snapshot.activeCodec?.name ?: "unknown"} result=${snapshot.lastResult ?: result?.javaClass?.simpleName ?: "none"}")
         } else {
             log.write("background: device $deviceAddress is no longer in connected A2DP devices")
